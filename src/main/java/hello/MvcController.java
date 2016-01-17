@@ -5,9 +5,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,12 +23,23 @@ public class MvcController {
 	AuthenticationManager authManager;
 
 	@RequestMapping(path = "auth/login", method = RequestMethod.POST)
-	public User login(@RequestParam("username") String username, @RequestParam("password") String password) {
-		User user = new User(username, password);
-		Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(user, password));
+	public User login(@RequestParam("username") String username, @RequestParam("password") String password,
+			HttpServletRequest req, HttpServletResponse response) {
+		Authentication auth = null;
+		try {
+			auth = authManager
+					.authenticate(new UsernamePasswordAuthenticationToken(new User(username, password), password));
+		} catch (AuthenticationException e) {
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
+			return new User();
+		}
+		if (auth == null) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return null;
+		}
+
 		SecurityContextHolder.getContext().setAuthentication(auth);
-		System.out.println("auth:" + auth);
-		return user;
+		return (User) auth.getPrincipal();
 	}
 
 	@RequestMapping(path = "auth/logout", method = RequestMethod.GET)
@@ -35,6 +48,7 @@ public class MvcController {
 			req.logout();
 		} catch (ServletException e) {
 			System.out.println("auth:" + e);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 		return new User();
 	}
