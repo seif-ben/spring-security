@@ -12,12 +12,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
 	@Override
 	public Authentication authenticate(Authentication auth) {
-		// if (auth.isAuthenticated() && auth.getPrincipal() instanceof User) {
-		// // user already connected
-		// System.out.println("user already connected");
-		// return auth;
-		// }
-
 		User pricipal = (User) auth.getPrincipal();
 
 		if (pricipal.getUsername().equals("bad")) {

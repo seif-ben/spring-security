@@ -35,7 +35,7 @@ public class MvcController {
 		}
 		if (auth == null) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return null;
+			return new User();
 		}
 
 		SecurityContextHolder.getContext().setAuthentication(auth);
@@ -53,7 +53,7 @@ public class MvcController {
 		return new User();
 	}
 
-	@RequestMapping(path = "rest/current", method = RequestMethod.GET)
+	@RequestMapping(path = "auth/current", method = RequestMethod.GET)
 	public User current(HttpServletRequest req, HttpServletResponse response) {
 		UsernamePasswordAuthenticationToken principal = (UsernamePasswordAuthenticationToken) req.getUserPrincipal();
 		if (principal.getPrincipal() instanceof User) {
